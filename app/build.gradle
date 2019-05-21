@@ -1,0 +1,77 @@
+apply plugin: 'com.android.application'
+apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
+apply plugin: 'kotlin-kapt'
+
+android {
+    compileSdkVersion buildInfo.targetSdk
+
+    defaultConfig {
+        applicationId buildInfo.id
+        minSdkVersion buildInfo.minSdk
+        targetSdkVersion buildInfo.targetSdk
+        versionCode buildInfo.verCode
+        versionName buildInfo.verName
+        multiDexEnabled true
+        testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "BASE_URL", "\"https://www.google.com\"")
+    }
+
+    dataBinding {
+        enabled = true
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    // Local libs
+    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
+    // Project modules
+//    implementation project(path: ':api')
+
+    // Kotlin libs
+    implementation deps.kotlin.lib
+    implementation deps.kotlin.extensions
+
+    // Support libs
+    implementation deps.support.appCompat
+    implementation deps.support.constraintLayout
+
+    // Material libs
+    implementation deps.material.lib
+
+    // Architecture component libs
+    implementation deps.architecture.extensions
+    implementation deps.architecture.common
+    kapt deps.architecture.compiler
+    testImplementation deps.architecture.coreTesting
+
+    // Moshi
+    implementation deps.network.moshiConverter
+
+    // Dagger libs
+    implementation deps.dagger.lib
+    kapt deps.dagger.compiler
+
+    // Coroutine libs
+    implementation deps.coroutines.core
+    implementation deps.coroutines.android
+
+    // Testing libs
+    testImplementation deps.testing.junit
+    androidTestImplementation deps.testing.testRunner
+    androidTestImplementation deps.testing.espresso
+}
