@@ -70,6 +70,17 @@ dependencies {
     implementation deps.coroutines.core
     implementation deps.coroutines.android
 
+    // Glide libs
+    implementation deps.glide.lib
+    kapt deps.glide.compiler
+
+    // Jetpack libs
+    implementation deps.navigation.lib
+    implementation deps.navigation.ui
+    implementation deps.lifecycle.lib
+    implementation deps.lifecycle.extensions
+    kapt deps.lifecycle.compiler
+
     // Testing libs
     testImplementation deps.testing.junit
     androidTestImplementation deps.testing.testRunner

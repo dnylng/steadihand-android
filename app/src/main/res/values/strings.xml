@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Steadihand</string>
+    <string name="title_for_you">For You</string>
+    <string name="title_comics">Comics</string>
+    <string name="title_discover">Discover</string>
+    <string name="title_me">Me</string>
+    <string name="title_settings">Settings</string>
 </resources>
