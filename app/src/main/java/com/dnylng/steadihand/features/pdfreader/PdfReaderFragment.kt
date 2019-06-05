@@ -16,7 +16,10 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.graphics.createBitmap
 import androidx.fragment.app.Fragment
+import com.dnylng.steadihand.util.Utils
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.google.ar.sceneform.math.Quaternion
+import com.google.ar.sceneform.math.Vector3
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -60,8 +63,16 @@ class PdfReaderFragment : Fragment() {
         val view = inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false)
         view.apply {
             pdf = findViewById(com.dnylng.steadihand.R.id.pdf)
-            prevPdfBtn = findViewById<FloatingActionButton>(com.dnylng.steadihand.R.id.prev_pdf_btn).also { it.setOnClickListener { showPage(currentPage.index - 1) } }
-            nextPdfBtn = findViewById<FloatingActionButton>(com.dnylng.steadihand.R.id.next_pdf_btn).also { it.setOnClickListener { showPage(currentPage.index + 1) } }
+            prevPdfBtn = findViewById<FloatingActionButton>(com.dnylng.steadihand.R.id.prev_pdf_btn).also {
+                it.setOnClickListener {
+                    showPage(currentPage.index - 1)
+                }
+            }
+            nextPdfBtn = findViewById<FloatingActionButton>(com.dnylng.steadihand.R.id.next_pdf_btn).also {
+                it.setOnClickListener {
+                    showPage(currentPage.index + 1)
+                }
+            }
         }
         pdf.setOnLongClickListener(onLongClickListener)
         return view
@@ -149,13 +160,17 @@ class PdfReaderFragment : Fragment() {
     private var accelerometer: Sensor? = null
     private var isInitReading = true
     private val referenceAngles = FloatArray(4)
+    private val velocity = floatArrayOf(0f, 0f, 0f)
+    private val position = floatArrayOf(0f, 0f, 0f)
+    private var acceleration = floatArrayOf(0f, 0f, 0f)
+    private var timestamp = 0L
+    private val referencePosition = intArrayOf(0, 0, 0)
+    private var sensitivity = 0.2f
 
     private val sensorEventListener = object : SensorEventListener {
-        override fun onAccuracyChanged(rotationSensor: Sensor?, accuracy: Int) { }
+        override fun onAccuracyChanged(rotationSensor: Sensor?, accuracy: Int) {}
 
-        override fun onSensorChanged(event: SensorEvent?) {
-            if (event == null || rotationSensor == null || accelerometer == null) return
-
+        override fun onSensorChanged(event: SensorEvent) {
             when (event.sensor.type) {
                 Sensor.TYPE_GAME_ROTATION_VECTOR -> {
                     if (isInitReading) {
@@ -163,22 +178,41 @@ class PdfReaderFragment : Fragment() {
                         isInitReading = false
                     } else {
                         val orientationAngles = calcOrientaionAngles(event.values)
-                        val yaw = orientationAngles[0]
-                        val pitch = orientationAngles[1]
-                        val roll = orientationAngles[2]
+                        val orientation = Quaternion(orientationAngles[1], orientationAngles[2], orientationAngles[0], 1f)
+                        val rotate = Vector3(orientationAngles[1], orientationAngles[2], orientationAngles[0])
+                        val result = Quaternion.rotateVector(orientation, rotate)
 
-                        Log.d(TAG, "ROT VEC -> Yaw: $yaw, Pitch: $pitch, and Roll: $roll")
+                        Log.d(TAG, "ROT -> x:${result.x}, y: ${result.y}, and z: ${result.z}")
 
-                        pdf.rotation = -yaw + referenceAngles[0]
-                        pdf.rotationX = -pitch + referenceAngles[1]
-                        pdf.rotationY = -roll + referenceAngles[2]
+                        pdf.rotation = (referenceAngles[0] - result.z) * sensitivity
+                        pdf.rotationX = (referenceAngles[1] - result.x) * sensitivity
+                        pdf.rotationY = (referenceAngles[2] - result.y) * sensitivity
                     }
                 }
                 Sensor.TYPE_LINEAR_ACCELERATION -> {
-                    val x = event.values[0]
-                    val y = event.values[1]
-                    val z = event.values[2]
-                    Log.d(TAG, "LIN ACC -> x: $x, y: $y, and z: $z")
+                    val eventValues = Utils.lowPassFilter(event.values, 0.8f)
+                    if (timestamp == 0L) {
+                        floatArrayOf(0f, 0f, 0f).apply {
+                            copyInto(position)
+                            copyInto(velocity)
+                        }
+                        eventValues.copyInto(acceleration)
+                        pdf.getLocationOnScreen(referencePosition)
+                    } else {
+                        val dt = (event.timestamp - timestamp) * Utils.NANO_TO_SEC
+                        eventValues.copyInto(acceleration)
+
+                        for (index in 0..1) {
+                            velocity[index] += acceleration[index] * dt - sensitivity * velocity[index]
+                            position[index] += velocity[index] * 12500 * dt - sensitivity * position[index]
+                        }
+
+                        Log.d(TAG, "VEL -> x:${velocity[0]}, and y: ${velocity[1]}")
+                        Log.d(TAG, "POS -> x:${position[0]}, and y: ${position[1]}")
+                    }
+                    timestamp = event.timestamp
+                    pdf.translationX = -position[0]
+                    pdf.translationY = position[1]
                 }
             }
         }

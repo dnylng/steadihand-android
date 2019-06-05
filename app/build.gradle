@@ -81,6 +81,8 @@ dependencies {
     implementation deps.lifecycle.extensions
     kapt deps.lifecycle.compiler
 
+    implementation 'com.google.ar.sceneform.ux:sceneform-ux:1.9.0'
+
     // Testing libs
     testImplementation deps.testing.junit
     androidTestImplementation deps.testing.testRunner

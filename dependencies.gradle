@@ -139,7 +139,7 @@ ext.deps = deps
 
 // Set all build versions as extra property
 def buildInfo = [:]
-    buildInfo.minSdk = 21
+    buildInfo.minSdk = 24
     buildInfo.targetSdk = 28
     buildInfo.id = "com.dnylng.steadihand"
     buildInfo.verCode = 1
