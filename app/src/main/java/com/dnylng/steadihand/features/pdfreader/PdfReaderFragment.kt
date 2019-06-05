@@ -17,7 +17,6 @@ import android.widget.ImageView
 import androidx.core.graphics.createBitmap
 import androidx.fragment.app.Fragment
 import com.dnylng.steadihand.util.Utils
-import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import java.io.File
@@ -42,18 +41,12 @@ class PdfReaderFragment : Fragment() {
     }
 
     private lateinit var pdf: ImageView
-    private lateinit var prevPdfBtn: FloatingActionButton
-    private lateinit var nextPdfBtn: FloatingActionButton
+    private lateinit var prevPdfBtn: View
+    private lateinit var nextPdfBtn: View
     private lateinit var pdfRenderer: PdfRenderer
     private lateinit var currentPage: PdfRenderer.Page
     private lateinit var parcelFileDescriptor: ParcelFileDescriptor
     private var pageIdx = 0
-
-    private val onLongClickListener = View.OnLongClickListener {
-        isInitReading = true
-        resetPosition(referenceAngles)
-        true
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         if (savedInstanceState != null) {
@@ -62,19 +55,20 @@ class PdfReaderFragment : Fragment() {
 
         val view = inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false)
         view.apply {
-            pdf = findViewById(com.dnylng.steadihand.R.id.pdf)
-            prevPdfBtn = findViewById<FloatingActionButton>(com.dnylng.steadihand.R.id.prev_pdf_btn).also {
-                it.setOnClickListener {
-                    showPage(currentPage.index - 1)
-                }
+            pdf = findViewById<ImageView>(com.dnylng.steadihand.R.id.pdf).also {
+                setOnLongClickListener {
+                isInitReading = true
+                resetPosition(referenceAngles)
+                true
             }
-            nextPdfBtn = findViewById<FloatingActionButton>(com.dnylng.steadihand.R.id.next_pdf_btn).also {
-                it.setOnClickListener {
-                    showPage(currentPage.index + 1)
-                }
+            }
+            prevPdfBtn = findViewById<View>(com.dnylng.steadihand.R.id.prev_pdf_btn).also {
+                it.setOnClickListener { showPage(currentPage.index - 1) }
+            }
+            nextPdfBtn = findViewById<View>(com.dnylng.steadihand.R.id.next_pdf_btn).also {
+                it.setOnClickListener { showPage(currentPage.index + 1) }
             }
         }
-        pdf.setOnLongClickListener(onLongClickListener)
         return view
     }
 
