@@ -10,13 +10,8 @@ import com.dnylng.steadihand.R
 class ComicsFragment : Fragment() {
 
     companion object {
-        const val KEY = "FragmentKey"
-        fun newInstance(key: String): Fragment {
-            val fragment = ComicsFragment()
-            val arguments = Bundle()
-            arguments.putString(KEY, key)
-            fragment.arguments = arguments
-            return fragment
+        fun newInstance(): Fragment {
+            return ComicsFragment()
         }
     }
 

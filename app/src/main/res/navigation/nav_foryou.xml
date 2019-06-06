@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_foryou"
+    app:startDestination="@id/forYou">
+
+    <fragment
+        android:id="@+id/forYou"
+        android:name="com.dnylng.steadihand.features.foryou.ForYouFragment"
+        android:label="@string/title_foryou"
+        tools:layout="@layout/fragment_foryou">
+        <action
+            android:id="@+id/action_foryou_to_pdfreader"
+            app:destination="@id/pdfReaderFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/pdfReaderFragment"
+        android:name="com.dnylng.steadihand.features.pdfreader.PdfReaderFragment"
+        android:label="@string/title_pdfreader"
+        tools:layout="@layout/fragment_pdfreader"/>
+</navigation>

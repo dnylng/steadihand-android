@@ -27,17 +27,12 @@ import java.io.IOException
 class PdfReaderFragment : Fragment() {
 
     companion object {
-        private const val KEY = "FragmentKey"
         private const val SAVED_STATE_PAGE_IDX_KEY = "PageIndexKey"
         private const val FILENAME = "scottpilgrim.pdf"
         private val TAG = PdfReaderFragment::class.java.simpleName
 
-        fun newInstance(key: String): Fragment {
-            val fragment = PdfReaderFragment()
-            val arguments = Bundle()
-            arguments.putString(KEY, key)
-            fragment.arguments = arguments
-            return fragment
+        fun newInstance(): Fragment {
+            return PdfReaderFragment()
         }
     }
 
@@ -75,10 +70,10 @@ class PdfReaderFragment : Fragment() {
         view.apply {
             pdf = findViewById<ImageView>(com.dnylng.steadihand.R.id.pdf).also {
                 setOnLongClickListener {
-                isInitReading = true
-                resetPosition(referenceAngles)
-                true
-            }
+                    isInitReading = true
+                    resetPosition(referenceAngles)
+                    true
+                }
             }
             prevPdfBtn = findViewById<View>(com.dnylng.steadihand.R.id.prev_pdf_btn).also {
                 it.setOnClickListener { showPage(currentPage.index - 1) }
@@ -193,7 +188,8 @@ class PdfReaderFragment : Fragment() {
                         isInitReading = false
                     } else {
                         val orientationAngles = calcOrientaionAngles(event.values)
-                        val orientation = Quaternion(orientationAngles[1], orientationAngles[2], orientationAngles[0], 1f)
+                        val orientation =
+                            Quaternion(orientationAngles[1], orientationAngles[2], orientationAngles[0], 1f)
                         val rotate = Vector3(orientationAngles[1], orientationAngles[2], orientationAngles[0])
                         val result = Quaternion.rotateVector(orientation, rotate)
 
