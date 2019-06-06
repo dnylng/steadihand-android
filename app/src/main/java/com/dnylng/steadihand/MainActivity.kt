@@ -65,4 +65,10 @@ class MainActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         return navController?.value?.navigateUp() ?: false
     }
+
+    override fun onBackPressed() {
+        if (navController?.value?.navigateUp() == false) {
+            super.onBackPressed()
+        }
+    }
 }
