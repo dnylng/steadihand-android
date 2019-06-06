@@ -31,6 +31,7 @@ class PdfReaderFragment : Fragment() {
         private const val SAVED_STATE_PAGE_IDX_KEY = "PageIndexKey"
         private const val FILENAME = "scottpilgrim.pdf"
         private val TAG = PdfReaderFragment::class.java.simpleName
+
         fun newInstance(key: String): Fragment {
             val fragment = PdfReaderFragment()
             val arguments = Bundle()
@@ -40,6 +41,7 @@ class PdfReaderFragment : Fragment() {
         }
     }
 
+    // region Variables
     private lateinit var pdf: ImageView
     private lateinit var prevPdfBtn: View
     private lateinit var nextPdfBtn: View
@@ -47,12 +49,28 @@ class PdfReaderFragment : Fragment() {
     private lateinit var currentPage: PdfRenderer.Page
     private lateinit var parcelFileDescriptor: ParcelFileDescriptor
     private var pageIdx = 0
+    private lateinit var sensorManager: SensorManager
+    private var rotationSensor: Sensor? = null
+    private var accelerometer: Sensor? = null
+    private var isInitReading = true
+    private val referenceAngles = FloatArray(4)
+    private val velocity = floatArrayOf(0f, 0f, 0f)
+    private val position = floatArrayOf(0f, 0f, 0f)
+    private var acceleration = floatArrayOf(0f, 0f, 0f)
+    private var timestamp = 0L
+    private val referencePosition = intArrayOf(0, 0, 0)
+    private var sensitivity = 0.2f
+    // endregion
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    // region Lifecycle methods
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
         if (savedInstanceState != null) {
             pageIdx = savedInstanceState.getInt(SAVED_STATE_PAGE_IDX_KEY)
         }
+    }
 
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val view = inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false)
         view.apply {
             pdf = findViewById<ImageView>(com.dnylng.steadihand.R.id.pdf).also {
@@ -99,11 +117,24 @@ class PdfReaderFragment : Fragment() {
         super.onStop()
     }
 
+    override fun onResume() {
+        super.onResume()
+        sensorManager.registerListener(sensorEventListener, rotationSensor, SensorManager.SENSOR_DELAY_FASTEST)
+        sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_FASTEST)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        sensorManager.unregisterListener(sensorEventListener)
+    }
+
     override fun onSaveInstanceState(outState: Bundle) {
         outState.putInt(SAVED_STATE_PAGE_IDX_KEY, currentPage.index)
         super.onSaveInstanceState(outState)
     }
+    // endregion
 
+    // region PdfRenderer methods
     @Throws(IOException::class)
     private fun openRenderer(context: Context?) {
         if (context == null) return
@@ -148,19 +179,9 @@ class PdfReaderFragment : Fragment() {
         prevPdfBtn.isEnabled = (0 != index)
         nextPdfBtn.isEnabled = (index + 1 < pageCount)
     }
+    // endregion
 
-    private lateinit var sensorManager: SensorManager
-    private var rotationSensor: Sensor? = null
-    private var accelerometer: Sensor? = null
-    private var isInitReading = true
-    private val referenceAngles = FloatArray(4)
-    private val velocity = floatArrayOf(0f, 0f, 0f)
-    private val position = floatArrayOf(0f, 0f, 0f)
-    private var acceleration = floatArrayOf(0f, 0f, 0f)
-    private var timestamp = 0L
-    private val referencePosition = intArrayOf(0, 0, 0)
-    private var sensitivity = 0.2f
-
+    // region Accelerometer/Gyroscope methods
     private val sensorEventListener = object : SensorEventListener {
         override fun onAccuracyChanged(rotationSensor: Sensor?, accuracy: Int) {}
 
@@ -229,15 +250,5 @@ class PdfReaderFragment : Fragment() {
     private fun resetPosition(rotationVector: FloatArray) {
         calcOrientaionAngles(rotationVector).copyInto(referenceAngles)
     }
-
-    override fun onResume() {
-        super.onResume()
-        sensorManager.registerListener(sensorEventListener, rotationSensor, SensorManager.SENSOR_DELAY_FASTEST)
-        sensorManager.registerListener(sensorEventListener, accelerometer, SensorManager.SENSOR_DELAY_FASTEST)
-    }
-
-    override fun onPause() {
-        super.onPause()
-        sensorManager.unregisterListener(sensorEventListener)
-    }
+    // endregion
 }
