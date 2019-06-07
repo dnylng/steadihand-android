@@ -16,19 +16,24 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.core.graphics.createBitmap
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
+import com.dnylng.steadihand.SteadihandApplication
+import com.dnylng.steadihand.di.viewmodel.ViewModelFactory
 import com.dnylng.steadihand.util.Utils
+import com.dnylng.steadihand.util.snack
 import com.google.ar.sceneform.math.Quaternion
 import com.google.ar.sceneform.math.Vector3
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import javax.inject.Inject
 
 
 class PdfReaderFragment : Fragment() {
 
     companion object {
-        private const val SAVED_STATE_PAGE_IDX_KEY = "PageIndexKey"
-        private const val FILENAME = "scottpilgrim.pdf"
+        const val SAVED_STATE_PAGE_IDX_KEY = "PageIndex"
         private val TAG = PdfReaderFragment::class.java.simpleName
 
         fun newInstance(): Fragment {
@@ -37,13 +42,21 @@ class PdfReaderFragment : Fragment() {
     }
 
     // region Variables
+    /**
+     * Vars for the views
+     */
     private lateinit var pdf: ImageView
     private lateinit var prevPdfBtn: View
     private lateinit var nextPdfBtn: View
-    private lateinit var pdfRenderer: PdfRenderer
-    private lateinit var currentPage: PdfRenderer.Page
-    private lateinit var parcelFileDescriptor: ParcelFileDescriptor
-    private var pageIdx = 0
+
+    /**
+     * Vars for the pdf reader
+     */
+    private val pdfReader = PdfReader()
+
+    /**
+     * Vars for the accelerometer and gyroscope
+     */
     private lateinit var sensorManager: SensorManager
     private var rotationSensor: Sensor? = null
     private var accelerometer: Sensor? = null
@@ -55,19 +68,30 @@ class PdfReaderFragment : Fragment() {
     private var timestamp = 0L
     private val referencePosition = intArrayOf(0, 0, 0)
     private var sensitivity = 0.2f
+
+    /**
+     * Vars for the view model
+     */
+    @Inject
+    lateinit var factory: ViewModelFactory
+    private lateinit var viewModel: PdfReaderViewModel
     // endregion
 
     // region Lifecycle methods
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        if (savedInstanceState != null) {
-            pageIdx = savedInstanceState.getInt(SAVED_STATE_PAGE_IDX_KEY)
-        }
+        SteadihandApplication.component.inject(this)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        val view = inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false)
-        view.apply {
+        viewModel = ViewModelProviders.of(this, factory).get(PdfReaderViewModel::class.java)
+        observeError()
+
+        if (savedInstanceState != null) {
+            viewModel.pageIndex = savedInstanceState.getInt(SAVED_STATE_PAGE_IDX_KEY)
+        }
+
+        return inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false).apply {
             pdf = findViewById<ImageView>(com.dnylng.steadihand.R.id.pdf).also {
                 setOnLongClickListener {
                     isInitReading = true
@@ -76,20 +100,19 @@ class PdfReaderFragment : Fragment() {
                 }
             }
             prevPdfBtn = findViewById<View>(com.dnylng.steadihand.R.id.prev_pdf_btn).also {
-                it.setOnClickListener { showPage(currentPage.index - 1) }
+                it.setOnClickListener { showPage(pdf, viewModel.pageIndex - 1) }
             }
             nextPdfBtn = findViewById<View>(com.dnylng.steadihand.R.id.next_pdf_btn).also {
-                it.setOnClickListener { showPage(currentPage.index + 1) }
+                it.setOnClickListener { showPage(pdf, viewModel.pageIndex + 1) }
             }
         }
-        return view
     }
 
     override fun onStart() {
         super.onStart()
         try {
-            openRenderer(activity)
-            showPage(pageIdx)
+            pdfReader.openRenderer(activity)
+            showPage(pdf, viewModel.pageIndex)
         } catch (e: IOException) {
             Log.d(TAG, e.toString())
         }
@@ -105,7 +128,7 @@ class PdfReaderFragment : Fragment() {
 
     override fun onStop() {
         try {
-            closeRenderer()
+            pdfReader.closeRenderer()
         } catch (e: IOException) {
             Log.d(TAG, e.toString())
         }
@@ -124,55 +147,31 @@ class PdfReaderFragment : Fragment() {
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
-        outState.putInt(SAVED_STATE_PAGE_IDX_KEY, currentPage.index)
+        outState.putInt(SAVED_STATE_PAGE_IDX_KEY, viewModel.pageIndex)
         super.onSaveInstanceState(outState)
     }
     // endregion
 
-    // region PdfRenderer methods
-    @Throws(IOException::class)
-    private fun openRenderer(context: Context?) {
-        if (context == null) return
-        val file = File(context.cacheDir, FILENAME)
-        if (!file.exists()) {
-            val asset = context.assets.open(FILENAME)
-            val output = FileOutputStream(file)
-            val buffer = ByteArray(1024)
-            var size = asset.read(buffer)
-            while (size != -1) {
-                output.write(buffer, 0, size)
-                size = asset.read(buffer)
-            }
-            asset.close()
-            output.close()
-        }
-        parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-        pdfRenderer = PdfRenderer(parcelFileDescriptor)
-        currentPage = pdfRenderer.openPage(pageIdx)
+    // region Observers
+    private fun observeError() {
+        viewModel.errorMessage.observe(this, Observer { errorMessage ->
+            view?.snack(errorMessage)
+        })
     }
+    // endregion
 
-    @Throws(IOException::class)
-    private fun closeRenderer() {
-        currentPage.close()
-        pdfRenderer.close()
-        parcelFileDescriptor.close()
-    }
-
-    private fun showPage(index: Int) {
-        if (pdfRenderer.pageCount <= index) return
-        currentPage.close()
-        currentPage = pdfRenderer.openPage(index)
-        val bitmap = createBitmap(currentPage.width, currentPage.height, Bitmap.Config.ARGB_8888)
-        currentPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
-        pdf.setImageBitmap(bitmap)
+    //region Pdf Reader methods
+    private fun showPage(pdf: ImageView, index: Int) {
+        viewModel.pageIndex = index
+        pdfReader.renderPage(pdf, index)
         updateUi()
     }
 
     private fun updateUi() {
-        val index = currentPage.index
-        val pageCount = pdfRenderer.pageCount
-        prevPdfBtn.isEnabled = (0 != index)
-        nextPdfBtn.isEnabled = (index + 1 < pageCount)
+        val index = pdfReader.getCurrentPage().index
+        val pageCount = pdfReader.getPageCount()
+        prevPdfBtn.isEnabled = 0 != index
+        nextPdfBtn.isEnabled = index + 1 < pageCount
     }
     // endregion
 

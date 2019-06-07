@@ -1,22 +1,13 @@
 package com.dnylng.steadihand
 
 import android.os.Bundle
-import android.util.SparseArray
-import androidx.annotation.IdRes
 import androidx.appcompat.app.AppCompatActivity
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import androidx.navigation.NavController
 import androidx.navigation.ui.setupActionBarWithNavController
-import com.dnylng.steadihand.features.comics.*
-import com.dnylng.steadihand.features.discover.DiscoverFragment
-import com.dnylng.steadihand.features.foryou.ForYouFragment
-import com.dnylng.steadihand.features.me.MeFragment
-import com.dnylng.steadihand.features.settings.SettingsFragment
 import com.dnylng.steadihand.util.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
-import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
