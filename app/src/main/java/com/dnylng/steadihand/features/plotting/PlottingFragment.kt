@@ -11,12 +11,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.dnylng.steadihand.util.Utils
 import com.jjoe64.graphview.GraphView
 import com.jjoe64.graphview.series.DataPoint
 import com.jjoe64.graphview.series.DataPointInterface
 import com.jjoe64.graphview.series.LineGraphSeries
-import io.reactivex.Flowable
+import io.reactivex.android.schedulers.AndroidSchedulers
+import io.reactivex.disposables.Disposable
+import io.reactivex.schedulers.Schedulers
 import io.reactivex.subjects.BehaviorSubject
+import uk.me.berndporr.iirj.Butterworth
+
+
 
 
 /**
@@ -34,9 +40,16 @@ class PlottingFragment : Fragment() {
 
     private val startTime = System.currentTimeMillis()
 
-    private val proxy = BehaviorSubject.create<SensorEvent>()
+    // Reactive stuff inspired by https://www.kotlindevelopment.com/reactive-sensor-monitoring/
+    private val linearProxy = BehaviorSubject.create<SensorEvent>()
+    private val rotationProxy = BehaviorSubject.create<SensorEvent>()
+
+    private var disposableLinear: Disposable? = null
+
+    var butterworth = Butterworth()
 
     companion object {
+        private val TAG = PlottingFragment::class.java.simpleName
         fun newInstance(): Fragment {
             return PlottingFragment()
         }
@@ -71,14 +84,21 @@ class PlottingFragment : Fragment() {
             this.accelerometer = it
         }
 
-        val flowable = Flowable.just(0)
+        disposableLinear = linearProxy.subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .buffer(10)
+            .subscribe {
+                val floatArrays = Utils.separateFloatArrays(it)
+                val filteredArrays = Utils.lowPassFilter(floatArrays)
+                Log.d(TAG, "Sensor Event from Observable: ${it.size} - Raw: $floatArrays - Filtered: $filteredArrays")
+            }
+
+
+        butterworth.lowPass(10, 100.0, 50.0)
 
         super.onStart()
     }
 
-    fun addToFlowable() {
-
-    }
     override fun onResume() {
         register()
         super.onResume()
@@ -87,6 +107,11 @@ class PlottingFragment : Fragment() {
     override fun onPause() {
         unregister()
         super.onPause()
+    }
+
+    override fun onDestroy() {
+        disposableLinear?.dispose()
+        super.onDestroy()
     }
 
     fun register() {
@@ -105,20 +130,29 @@ class PlottingFragment : Fragment() {
             when (event.sensor.type) {
                 Sensor.TYPE_GAME_ROTATION_VECTOR -> {
 
+                    linearProxy.onNext(event)
+
                     val dataPointX = DataPoint(event.timestamp.toDouble() - startTime, event.values[0].toDouble())
                     val dataPointY = DataPoint(event.timestamp.toDouble() - startTime, event.values[1].toDouble())
                     val dataPointZ = DataPoint(event.timestamp.toDouble() - startTime, event.values[2].toDouble())
 
+                    val filteredX = butterworth.filter(event.values[0].toDouble())
+                    val filteredDataPointX = DataPoint(event.timestamp.toDouble() - startTime, filteredX)
+
                     dataSeriesX.appendData(dataPointX, true, 100)
+                    dataSeriesY.appendData(filteredDataPointX, true, 100)
+
 //                    dataSeriesY.appendData(dataPointY, true, 100)
 //                    dataSeriesZ.appendData(dataPointZ, true, 100)
-                    Log.d("PlottingFragment", "Event values: ${event.values} -- Data point: $dataPointX")
+                    Log.d(TAG, "Event values: ${event.values} -- Data point: $dataPointX")
 
                 }
                 Sensor.TYPE_LINEAR_ACCELERATION -> {
+                    rotationProxy.onNext(event)
                    // TODO the same for gyro
                 }
             }
         }
     }
+
 }
