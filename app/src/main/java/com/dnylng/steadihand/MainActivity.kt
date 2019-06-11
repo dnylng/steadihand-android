@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
             R.navigation.nav_comics,
             R.navigation.nav_discover,
             R.navigation.nav_me,
-            R.navigation.nav_settings
+            R.navigation.nav_plot
         )
 
         val controller = bottomNav.setupWithNavController(

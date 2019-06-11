@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+            xmlns:tools="http://schemas.android.com/tools"
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            app:startDestination="@id/plotFragment"
+            android:id="@+id/nav_plot">
+
+    <fragment
+            android:id="@+id/plotFragment"
+            android:name="com.dnylng.steadihand.features.plotting.PlottingFragment"
+            android:label="PlottingFragment"
+            tools:layout="@layout/fragment_plotting"/>
+
+</navigation>

@@ -21,7 +21,7 @@
         android:title="@string/title_me"/>
 
     <item
-        android:id="@+id/nav_settings"
-        android:icon="@drawable/ic_cog"
-        android:title="@string/title_settings"/>
+        android:id="@+id/nav_plot"
+        android:icon="@drawable/ic_plot"
+        android:title="@string/plot"/>
 </menu>
