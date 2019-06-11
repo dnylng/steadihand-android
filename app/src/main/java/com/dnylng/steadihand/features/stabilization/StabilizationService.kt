@@ -6,8 +6,6 @@ import android.hardware.SensorEventListener
 import android.hardware.SensorManager
 import android.util.Log
 import com.dnylng.steadihand.util.Utils
-import com.google.ar.sceneform.math.Quaternion
-import com.google.ar.sceneform.math.Vector3
 import io.reactivex.Observable
 
 
@@ -41,17 +39,16 @@ class StabilizationService(
                             isInitReading = false
                         } else {
                             val orientationAngles = calcOrientationAngles(event.values)
-                            val orientation =
-                                Quaternion(orientationAngles[1], orientationAngles[2], orientationAngles[0], 1f)
-                            val rotate = Vector3(orientationAngles[1], orientationAngles[2], orientationAngles[0])
-                            val result = Quaternion.rotateVector(orientation, rotate)
+                            val yaw = orientationAngles[0]
+                            val pitch = orientationAngles[1]
+                            val roll = orientationAngles[2]
 
-                            Log.d(TAG, "ROT -> x:${result.x}, y: ${result.y}, and z: ${result.z}")
+                            Log.d(TAG, "ROT -> x:$pitch, y: $roll, and z: $yaw")
 
                             e.onNext(Pair(event.sensor.type, floatArrayOf(
-                                (referenceAngles[0] - result.z) * sensitivity,
-                                (referenceAngles[1] - result.x) * sensitivity,
-                                (referenceAngles[2] - result.y) * sensitivity
+                                (referenceAngles[0] - yaw) * sensitivity,
+                                (referenceAngles[1] - pitch) * sensitivity,
+                                (referenceAngles[2] - roll) * sensitivity
                             )))
                         }
                     }

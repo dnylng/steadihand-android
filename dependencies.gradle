@@ -49,6 +49,9 @@ def versions = [:]
     // Jetpack
     versions.jetpack = "2.0.0"
 
+    // RxJava
+    versions.rxjava = "2.1.8"
+
 // Gradle plugin
 def gradle = [:]
     gradle.plugin = "com.android.tools.build:gradle:$versions.gradle"
@@ -120,6 +123,10 @@ def lifecycle = [:]
     lifecycle.extensions = "androidx.lifecycle:lifecycle-extensions:$versions.jetpack"
     lifecycle.compiler = "androidx.lifecycle:lifecycle-compiler:$versions.jetpack"
 
+// RxJava libs
+def rxjava = [:]
+    rxjava.lib = "io.reactivex.rxjava2:rxjava:$versions.rxjava"
+
 // Set all libs as extra property
 def deps = [:]
     deps.gradle = gradle
@@ -135,11 +142,12 @@ def deps = [:]
     deps.glide = glide
     deps.navigation = navigation
     deps.lifecycle = lifecycle
+    deps.rxjava = rxjava
 ext.deps = deps
 
 // Set all build versions as extra property
 def buildInfo = [:]
-    buildInfo.minSdk = 24
+    buildInfo.minSdk = 21
     buildInfo.targetSdk = 28
     buildInfo.id = "com.dnylng.steadihand"
     buildInfo.verCode = 1
