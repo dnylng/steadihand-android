@@ -1,7 +1,5 @@
 package com.dnylng.steadihand.features.pdfreader
 
-import android.content.Context
-import android.hardware.SensorManager
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -12,7 +10,6 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProviders
 import com.dnylng.steadihand.SteadihandApplication
-import com.dnylng.steadihand.StabilizationService
 import com.dnylng.steadihand.di.viewmodel.ViewModelFactory
 import com.dnylng.steadihand.util.snack
 import java.io.IOException
@@ -42,11 +39,6 @@ class PdfReaderFragment : Fragment() {
     private var pdfReader: PdfReader? = null
 
     /**
-     * Vars for the accelerometer and gyroscope
-     */
-    private var stabilizationService: StabilizationService? = null
-
-    /**
      * Vars for the view model
      */
     @Inject
@@ -64,11 +56,13 @@ class PdfReaderFragment : Fragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         viewModel = ViewModelProviders.of(this, factory).get(PdfReaderViewModel::class.java)
         observeError()
+        observeRotation()
+        observePosition()
 
         return inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false).apply {
             pdf = findViewById<ImageView>(com.dnylng.steadihand.R.id.pdf).also {
                 setOnLongClickListener {
-                    this@PdfReaderFragment.stabilizationService?.reset()
+                    viewModel.stabilizationService.reset()
                     true
                 }
             }
@@ -87,7 +81,6 @@ class PdfReaderFragment : Fragment() {
             pdfReader = PdfReader()
             pdfReader?.openRenderer(activity)
             showPage(pdf, viewModel.pageIndex)
-            stabilizationService = StabilizationService(activity?.getSystemService(Context.SENSOR_SERVICE) as SensorManager, pdf)
         } catch (e: IOException) {
             viewModel.errorMessage.value = "Failed to load PDF"
             Log.d(TAG, e.toString())
@@ -95,6 +88,7 @@ class PdfReaderFragment : Fragment() {
     }
 
     override fun onStop() {
+        viewModel.onStop()
         try {
             pdfReader?.closeRenderer()
         } catch (e: IOException) {
@@ -105,12 +99,12 @@ class PdfReaderFragment : Fragment() {
 
     override fun onResume() {
         super.onResume()
-        stabilizationService?.register()
+        viewModel.onResume()
     }
 
     override fun onPause() {
         super.onPause()
-        stabilizationService?.unregister()
+        viewModel.onPause()
     }
 
     /**
@@ -119,6 +113,23 @@ class PdfReaderFragment : Fragment() {
     private fun observeError() {
         viewModel.errorMessage.observe(this, Observer { errorMessage ->
             view?.snack(errorMessage)
+        })
+    }
+
+    private fun observeRotation() {
+        viewModel.stabilizedRotation.observe(this, Observer { rotation ->
+            if (rotation == null) return@Observer
+            pdf.rotation = rotation[0]
+            pdf.rotationX = rotation[1]
+            pdf.rotationY = rotation[2]
+        })
+    }
+
+    private fun observePosition() {
+        viewModel.stabilizedPosition.observe(this, Observer { position ->
+            if (position == null) return@Observer
+            pdf.translationX = position[0]
+            pdf.translationY = position[1]
         })
     }
 
