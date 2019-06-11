@@ -4,19 +4,14 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.pdf.PdfRenderer
 import android.os.ParcelFileDescriptor
-import android.widget.ImageView
 import androidx.core.graphics.createBitmap
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
 class PdfReader(
-    private val filename: String = FILENAME
+    private val filename: String = ""
 ) {
-
-    companion object {
-        private const val FILENAME = "scottpilgrim.pdf"
-    }
 
     private lateinit var pdfRenderer: PdfRenderer
     private lateinit var currentPage: PdfRenderer.Page
@@ -50,16 +45,15 @@ class PdfReader(
         parcelFileDescriptor.close()
     }
 
-    fun renderPage(pdf: ImageView, index: Int) {
-        if (pdfRenderer.pageCount <= index) return
+    fun getBitmap(index: Int): Bitmap? {
+        val pageCount = pdfRenderer.pageCount
+        if (pageCount <= index || index < 0) return null
         currentPage.close()
-        currentPage = pdfRenderer.openPage(index)
+        currentPage = pdfRenderer.openPage(index) ?: return null
         val bitmap = createBitmap(currentPage.width, currentPage.height, Bitmap.Config.ARGB_8888)
         currentPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
-        pdf.setImageBitmap(bitmap)
+        return bitmap
     }
-
-    fun getCurrentPage() = currentPage
 
     fun getPageCount() = pdfRenderer.pageCount
 }

@@ -1,30 +1,40 @@
 package com.dnylng.steadihand.features.pdfreader
 
 import android.app.Application
+import android.content.Context
 import android.hardware.Sensor
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.dnylng.steadihand.features.stabilization.StabilizationService
 import com.dnylng.steadihand.util.LiveEvent
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import java.io.IOException
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class PdfReaderViewModel @Inject constructor(
-    application: Application,
+    val app: Application,
     val stabilizationService: StabilizationService
-) : AndroidViewModel(application) {
+) : AndroidViewModel(app) {
+
+    companion object {
+        private const val FILENAME = "scottpilgrim.pdf"
+        private val TAG = PdfReaderViewModel::class.java.simpleName
+    }
 
     private lateinit var stabilizationDisposable: Disposable
+    private val pdfReader = PdfReader(FILENAME)
     val errorMessage: LiveEvent<String> = LiveEvent()
     val stabilizedRotation: MutableLiveData<FloatArray> = MutableLiveData()
     val stabilizedPosition: MutableLiveData<FloatArray> = MutableLiveData()
-    var pageIndex = 0
+    var pageIndex: MutableLiveData<Int> = MutableLiveData()
 
     init {
-        stabilizationSubscribe()
+        pageIndex.value = 0
     }
 
     override fun onCleared() {
@@ -33,7 +43,8 @@ class PdfReaderViewModel @Inject constructor(
     }
 
     fun onStart() {
-
+        stabilizationSubscribe()
+        openPdfReader(app.applicationContext)
     }
 
     fun onResume() {
@@ -47,6 +58,24 @@ class PdfReaderViewModel @Inject constructor(
 
     fun onStop() {
         stabilizationUnsubscribe()
+        closePdfReader()
+    }
+
+    private fun openPdfReader(context: Context) {
+        try {
+            pdfReader.openRenderer(context)
+        } catch (e: IOException) {
+            errorMessage.value = "Failed to load PDF"
+            Log.e(TAG, e.toString())
+        }
+    }
+
+    private fun closePdfReader() {
+        try {
+            pdfReader.closeRenderer()
+        } catch (e: IOException) {
+            Log.e(TAG, e.toString())
+        }
     }
 
     private fun stabilizationSubscribe() {
@@ -63,4 +92,8 @@ class PdfReaderViewModel @Inject constructor(
     private fun stabilizationUnsubscribe() {
         stabilizationDisposable.dispose()
     }
+
+    fun getPageCount() = pdfReader.getPageCount()
+
+    fun getBitmap(index: Int) = pdfReader.getBitmap(index)
 }
