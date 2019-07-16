@@ -9,16 +9,16 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 
-class PdfReader(
-    private val filename: String = ""
-) {
+class PdfReader {
 
-    private lateinit var pdfRenderer: PdfRenderer
-    private lateinit var currentPage: PdfRenderer.Page
-    private lateinit var parcelFileDescriptor: ParcelFileDescriptor
+    private var pdfRenderer: PdfRenderer? = null
+    private var currentPage: PdfRenderer.Page? = null
+    private var parcelFileDescriptor: ParcelFileDescriptor? = null
+    val isOpen
+        get() = pdfRenderer == null || currentPage == null || parcelFileDescriptor == null
 
     @Throws(IOException::class)
-    fun openRenderer(context: Context?) {
+    fun open(context: Context?, filename: String = "") {
         if (context == null) return
         val file = File(context.cacheDir, filename)
         if (!file.exists()) {
@@ -34,26 +34,28 @@ class PdfReader(
             output.close()
         }
         parcelFileDescriptor = ParcelFileDescriptor.open(file, ParcelFileDescriptor.MODE_READ_ONLY)
-        pdfRenderer = PdfRenderer(parcelFileDescriptor)
-        currentPage = pdfRenderer.openPage(0)
+        parcelFileDescriptor?.let { pdfRenderer = PdfRenderer(it) }
+        currentPage = pdfRenderer?.openPage(0)
     }
 
     @Throws(IOException::class)
-    fun closeRenderer() {
-        currentPage.close()
-        pdfRenderer.close()
-        parcelFileDescriptor.close()
+    fun close() {
+        currentPage?.close()
+        pdfRenderer?.close()
+        parcelFileDescriptor?.close()
     }
 
     fun getBitmap(index: Int): Bitmap? {
-        val pageCount = pdfRenderer.pageCount
+        val pageCount = pdfRenderer?.pageCount ?: return null
         if (pageCount <= index || index < 0) return null
-        currentPage.close()
-        currentPage = pdfRenderer.openPage(index) ?: return null
-        val bitmap = createBitmap(currentPage.width, currentPage.height, Bitmap.Config.ARGB_8888)
-        currentPage.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
+        currentPage?.close()
+        currentPage = pdfRenderer?.openPage(index) ?: return null
+        val width = currentPage?.width ?: return null
+        val height = currentPage?.height ?: return null
+        val bitmap = createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        currentPage?.render(bitmap, null, null, PdfRenderer.Page.RENDER_MODE_FOR_PRINT)
         return bitmap
     }
 
-    fun getPageCount() = pdfRenderer.pageCount
+    fun getPageCount() = pdfRenderer?.pageCount
 }

@@ -1,5 +1,6 @@
 package com.dnylng.steadihand.di
 
+import com.dnylng.steadihand.features.pdfreader.PdfReader
 import com.dnylng.steadihand.features.pdfreader.PdfReaderViewModel
 import com.dnylng.steadihand.features.stabilization.StabilizationSensor
 import com.dnylng.steadihand.features.stabilization.StabilizationService
@@ -13,6 +14,9 @@ val appModule = module {
     single { StabilizationService(stabilizationSensor = get()) }
     single<StabilizationSensor> { SteadihandSensor(app = get()) }
 
+    // PdfReader
+    single { PdfReader() }
+
     // ViewModels
-    viewModel { PdfReaderViewModel(app = get(), stabilizationService = get()) }
+    viewModel { PdfReaderViewModel(app = get(), stabilizationService = get(), pdfReader = get()) }
 }

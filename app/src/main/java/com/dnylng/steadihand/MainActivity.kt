@@ -2,9 +2,7 @@ package com.dnylng.steadihand
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
-import androidx.navigation.NavController
 import androidx.navigation.ui.setupActionBarWithNavController
 import com.dnylng.steadihand.util.setupWithNavController
 import com.google.android.material.bottomnavigation.BottomNavigationView
@@ -15,23 +13,7 @@ class MainActivity : AppCompatActivity() {
         findViewById<BottomNavigationView>(R.id.bottom_nav)
     }
 
-    private var navController: LiveData<NavController>? = null
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
-
-        if (savedInstanceState == null) {
-            setupBottomNavigationBar()
-        }
-    }
-
-    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
-        super.onRestoreInstanceState(savedInstanceState)
-        setupBottomNavigationBar()
-    }
-
-    private fun setupBottomNavigationBar() {
+    private val navController by lazy(LazyThreadSafetyMode.NONE) {
         val navGraphIds = listOf(
             R.navigation.nav_foryou,
             R.navigation.nav_comics,
@@ -40,26 +22,41 @@ class MainActivity : AppCompatActivity() {
             R.navigation.nav_settings
         )
 
-        val controller = bottomNav.setupWithNavController(
+        bottomNav.setupWithNavController(
             navGraphIds,
             supportFragmentManager,
             R.id.nav_host_container,
             intent
         )
+    }
 
-        controller.observe(this, Observer { navController ->
-            setupActionBarWithNavController(navController)
-        })
-        navController = controller
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
+
+        if (savedInstanceState == null) {
+            observeActionBar()
+        }
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle?) {
+        super.onRestoreInstanceState(savedInstanceState)
+        observeActionBar()
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return navController?.value?.navigateUp() ?: false
+        return navController.value?.navigateUp() ?: false
     }
 
     override fun onBackPressed() {
-        if (navController?.value?.navigateUp() == false) {
+        if (navController.value?.navigateUp() == false) {
             super.onBackPressed()
         }
+    }
+
+    private fun observeActionBar() {
+        navController.observe(this, Observer { navController ->
+            setupActionBarWithNavController(navController)
+        })
     }
 }

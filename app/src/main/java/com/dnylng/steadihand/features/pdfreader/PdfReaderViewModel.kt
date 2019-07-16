@@ -1,7 +1,6 @@
 package com.dnylng.steadihand.features.pdfreader
 
 import android.app.Application
-import android.content.Context
 import android.hardware.Sensor
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.MutableLiveData
@@ -14,7 +13,8 @@ import java.io.IOException
 
 class PdfReaderViewModel constructor(
     private val app: Application,
-    val stabilizationService: StabilizationService
+    private val stabilizationService: StabilizationService,
+    private val pdfReader: PdfReader
 ) : AndroidViewModel(app) {
 
     companion object {
@@ -23,7 +23,6 @@ class PdfReaderViewModel constructor(
     }
 
     private lateinit var stabilizationDisposable: Disposable
-    private val pdfReader = PdfReader(FILENAME)
     val errorMessage: LiveEvent<String> = LiveEvent()
     val stabilizedRotation: MutableLiveData<FloatArray> = MutableLiveData()
     val stabilizedPosition: MutableLiveData<FloatArray> = MutableLiveData()
@@ -40,12 +39,12 @@ class PdfReaderViewModel constructor(
 
     fun onStart() {
         stabilizationSubscribe()
-        openPdfReader(app.applicationContext)
+        openPdfReader(FILENAME)
     }
 
     fun onResume() {
         stabilizationSubscribe()
-        stabilizationService.reset()
+        resetStabilization()
     }
 
     fun onPause() {
@@ -57,9 +56,10 @@ class PdfReaderViewModel constructor(
         closePdfReader()
     }
 
-    private fun openPdfReader(context: Context) {
+    private fun openPdfReader(filename: String = "") {
         try {
-            pdfReader.openRenderer(context)
+            if (pdfReader.isOpen) pdfReader.close()
+            pdfReader.open(app, filename)
         } catch (e: IOException) {
             errorMessage.value = "Failed to load PDF"
             Timber.e(TAG, e.toString())
@@ -68,7 +68,7 @@ class PdfReaderViewModel constructor(
 
     private fun closePdfReader() {
         try {
-            pdfReader.closeRenderer()
+            pdfReader.close()
         } catch (e: IOException) {
             Timber.e(TAG, e.toString())
         }
@@ -87,6 +87,10 @@ class PdfReaderViewModel constructor(
 
     private fun stabilizationUnsubscribe() {
         stabilizationDisposable.dispose()
+    }
+
+    fun resetStabilization() {
+        stabilizationService.reset()
     }
 
     fun getPageCount() = pdfReader.getPageCount()

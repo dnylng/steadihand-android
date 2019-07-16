@@ -31,7 +31,7 @@ class PdfReaderFragment : Fragment() {
         return inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false).apply {
             pdf = findViewById<ImageView>(com.dnylng.steadihand.R.id.pdf).also {
                 setOnLongClickListener {
-                    viewModel.stabilizationService.reset()
+                    viewModel.resetStabilization()
                     true
                 }
             }
@@ -108,7 +108,7 @@ class PdfReaderFragment : Fragment() {
 
     private fun updateUi() {
         val index = viewModel.pageIndex.value ?: return
-        val pageCount = viewModel.getPageCount()
+        val pageCount = viewModel.getPageCount() ?: return
         prevPdfBtn.isEnabled = 0 != index
         nextPdfBtn.isEnabled = index + 1 < pageCount
     }
