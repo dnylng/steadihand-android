@@ -3,21 +3,17 @@ package com.dnylng.steadihand.features.pdfreader
 import android.app.Application
 import android.content.Context
 import android.hardware.Sensor
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
-import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.dnylng.steadihand.features.stabilization.StabilizationService
 import com.dnylng.steadihand.util.LiveEvent
 import io.reactivex.disposables.Disposable
 import io.reactivex.schedulers.Schedulers
+import timber.log.Timber
 import java.io.IOException
-import javax.inject.Inject
-import javax.inject.Singleton
 
-@Singleton
-class PdfReaderViewModel @Inject constructor(
-    val app: Application,
+class PdfReaderViewModel constructor(
+    private val app: Application,
     val stabilizationService: StabilizationService
 ) : AndroidViewModel(app) {
 
@@ -66,7 +62,7 @@ class PdfReaderViewModel @Inject constructor(
             pdfReader.openRenderer(context)
         } catch (e: IOException) {
             errorMessage.value = "Failed to load PDF"
-            Log.e(TAG, e.toString())
+            Timber.e(TAG, e.toString())
         }
     }
 
@@ -74,7 +70,7 @@ class PdfReaderViewModel @Inject constructor(
         try {
             pdfReader.closeRenderer()
         } catch (e: IOException) {
-            Log.e(TAG, e.toString())
+            Timber.e(TAG, e.toString())
         }
     }
 

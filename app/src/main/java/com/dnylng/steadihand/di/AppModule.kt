@@ -1,22 +1,18 @@
 package com.dnylng.steadihand.di
 
-import android.app.Application
+import com.dnylng.steadihand.features.pdfreader.PdfReaderViewModel
+import com.dnylng.steadihand.features.stabilization.StabilizationSensor
 import com.dnylng.steadihand.features.stabilization.StabilizationService
 import com.dnylng.steadihand.features.stabilization.SteadihandSensor
-import dagger.Module
-import dagger.Provides
-import javax.inject.Singleton
+import org.koin.androidx.viewmodel.dsl.viewModel
+import org.koin.dsl.module
 
-@Module
-class AppModule(
-    private val application: Application
-) {
+val appModule = module {
 
-    @Provides
-    @Singleton
-    fun provideApplication() = application
+    // Stabilization
+    single { StabilizationService(stabilizationSensor = get()) }
+    single<StabilizationSensor> { SteadihandSensor(app = get()) }
 
-    @Provides
-    @Singleton
-    fun provideStabilizationService() = StabilizationService(SteadihandSensor(application))
+    // ViewModels
+    viewModel { PdfReaderViewModel(app = get(), stabilizationService = get()) }
 }

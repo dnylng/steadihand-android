@@ -1,155 +1,111 @@
 /** Gradle Dependencies Management **/
 
-// Extra properties
-ext.deps = [:]
-ext.buildInfo = [:]
+ext {
+    versions = [
+            gradle: '3.4.2',
+            kotlin: "1.3.31",
+            ktx: "1.0.2",
+            appCompat: "1.0.2",
+            constraintLayout: "1.1.3",
+            material: "1.0.0",
+            junit: "4.12",
+            testRunner: "1.2.0",
+            archTest: "1.1.1",
+            espresso: "3.2.0",
+            koin: "2.0.1",
+            retrofit: "2.6.0",
+            moshi: "1.8.0",
+            okHttp: "3.14.2",
+            coroutines: "1.2.1",
+            kotshi: "2.0.1",
+            glide: "4.9.0",
+            jetpack: "2.0.0",
+            gradleVersions: "0.21.0",
+            timber: "4.7.1",
+            rxjava: "2.1.8"
+    ]
 
-// Map of version numbers
-def versions = [:]
-    // Gradle
-    versions.gradle = '3.4.1'
+    // Classpath plugins
+    plugin = [
+            gradle: "com.android.tools.build:gradle:$versions.gradle",
+            kotlin: "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin",
+            gradleVersions: "com.github.ben-manes:gradle-versions-plugin:$versions.gradleVersions"
+    ]
 
-    // Kotlin
-    versions.kotlin = "1.3.20"
-    versions.ktx = "1.0.2"
+    // Kotlin libs
+    kotlin = [
+            lib: "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin",
+            ktx: "androidx.core:core-ktx:$versions.ktx",
+    ]
 
-    // Support
-    versions.appCompat = "1.0.2"
-    versions.constraintLayout = "1.1.3"
+    // Support libs
+    support = [
+            appCompat: "androidx.appcompat:appcompat:$versions.appCompat",
+            constraintLayout: "androidx.constraintlayout:constraintlayout:$versions.constraintLayout"
+    ]
 
-    // Material
-    versions.material = "1.0.0"
+    // Material libs
+    material = [
+            lib: "com.google.android.material:material:$versions.material"
+    ]
 
-    // Architecture components
-    versions.architecture = "1.1.1"
+    // Jetpack libs
+    jetpack = [
+            lifecycle: "androidx.lifecycle:lifecycle-viewmodel-ktx:$versions.jetpack",
+            livedata: "androidx.lifecycle:lifecycle-livedata:$versions.jetpack",
+            lifecycleCompiler: "android.arch.lifecycle:compiler:$versions.jetpack",
+            rxstreams: "androidx.lifecycle:lifecycle-reactivestreams-ktx:$versions.jetpack",
+            navigation: "androidx.navigation:navigation-fragment-ktx:$versions.jetpack",
+            navigationUI: "androidx.navigation:navigation-ui-ktx:$versions.jetpack"
+    ]
 
-    // Testing
-    versions.junit = "4.12"
-    versions.testRunner = "1.1.1"
-    versions.espresso = "3.1.1"
+    // Testing libs
+    testing = [
+            junit: "junit:junit:$versions.junit",
+            testRunner: "androidx.test:runner:$versions.testRunner",
+            espresso: "androidx.test.espresso:espresso-core:$versions.espresso",
+            coreTesting: "android.arch.core:core-testing:$versions.archTest",
+            mockWebServer: "com.squareup.okhttp3:mockwebserver:$versions.okHttp"
+    ]
 
-    // Dagger
-    versions.dagger = "2.21"
+    // Koin libs
+    koin = [
+            lib: "org.koin:koin-android:$versions.koin",
+            viewModel: "org.koin:koin-androidx-viewmodel:$versions.koin"
+    ]
 
-    // Network
-    versions.retrofit = "2.5.0"
-    versions.moshi = "1.8.0"
-    versions.okHttp = "3.12.1"
-    versions.coroutinesAdapter = "0.9.2"
+    // Networking libs
+    network = [
+            retrofit: "com.squareup.retrofit2:retrofit:$versions.retrofit",
+            moshiConverter: "com.squareup.retrofit2:converter-moshi:$versions.retrofit",
+            moshi: "com.squareup.moshi:moshi:$versions.moshi",
+            okHttp: "com.squareup.okhttp3:okhttp:$versions.okHttp",
+            okHttpLogging: "com.squareup.okhttp3:logging-interceptor:$versions.okHttp",
+            kotshi: "se.ansman.kotshi:api:$versions.kotshi",
+            kotshiCompiler: "se.ansman.kotshi:compiler:$versions.kotshi"
+    ]
 
-    // Coroutines
-    versions.coroutines = "1.2.1"
+    // Coroutine libs
+    coroutines = [
+            core: "org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.coroutines",
+            android: "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines"
+    ]
 
-    // Kotshi
-    versions.kotshi = "1.0.6"
+    // Logging libs
+    logs = [
+            timber: "com.jakewharton.timber:timber:$versions.timber"
+    ]
 
-    // Bumptech
-    versions.glide = "4.9.0"
+    // Rxjava libs
+    rxjava = [
+            lib: "io.reactivex.rxjava2:rxjava:$versions.rxjava"
+    ]
 
-    // Jetpack
-    versions.jetpack = "2.0.0"
-
-    // RxJava
-    versions.rxjava = "2.1.8"
-
-// Gradle plugin
-def gradle = [:]
-    gradle.plugin = "com.android.tools.build:gradle:$versions.gradle"
-
-// Kotlin libs
-def kotlin = [:]
-    kotlin.lib = "org.jetbrains.kotlin:kotlin-stdlib-jdk7:$versions.kotlin"
-    kotlin.extensions = "androidx.core:core-ktx:$versions.ktx"
-    kotlin.plugin = "org.jetbrains.kotlin:kotlin-gradle-plugin:$versions.kotlin"
-
-// Support libs
-def support = [:]
-    support.appCompat = "androidx.appcompat:appcompat:$versions.appCompat"
-    support.constraintLayout = "androidx.constraintlayout:constraintlayout:$versions.constraintLayout"
-
-// Material libs
-def material = [:]
-    material.lib = "com.google.android.material:material:$versions.material"
-
-// Architecture component libs
-def architecture = [:]
-    architecture.extensions = "android.arch.lifecycle:extensions:$versions.architecture"
-    architecture.common = "android.arch.lifecycle:common-java8:$versions.architecture"
-    architecture.compiler = "android.arch.lifecycle:compiler:$versions.architecture"
-    architecture.coreTesting = "android.arch.core:core-testing:$versions.architecture"
-
-// Testing libs
-def testing = [:]
-    testing.junit = "junit:junit:$versions.junit"
-    testing.testRunner = "androidx.test:runner:$versions.testRunner"
-    testing.espresso = "androidx.test.espresso:espresso-core:$versions.espresso"
-
-// Dagger libs
-def dagger = [:]
-    dagger.lib = "com.google.dagger:dagger:$versions.dagger"
-    dagger.compiler = "com.google.dagger:dagger-compiler:$versions.dagger"
-
-// Networking libs
-def network = [:]
-    network.retrofit = "com.squareup.retrofit2:retrofit:$versions.retrofit"
-    network.moshiConverter = "com.squareup.retrofit2:converter-moshi:$versions.retrofit"
-    network.moshi = "com.squareup.moshi:moshi:$versions.moshi"
-    network.okHttp = "com.squareup.okhttp3:okhttp:$versions.okHttp"
-    network.coroutinesAdapter = "com.jakewharton.retrofit:retrofit2-kotlin-coroutines-adapter:$versions.coroutinesAdapter"
-
-// Coroutine libs
-def coroutines = [:]
-    coroutines.core = "org.jetbrains.kotlinx:kotlinx-coroutines-core:$versions.coroutines"
-    coroutines.android = "org.jetbrains.kotlinx:kotlinx-coroutines-android:$versions.coroutines"
-
-// Kotshi libs
-def kotshi = [:]
-    kotshi.lib = "se.ansman.kotshi:api:$versions.kotshi"
-    kotshi.compiler = "se.ansman.kotshi:compiler:$versions.kotshi"
-
-// Glide libs
-def glide = [:]
-    glide.lib = "com.github.bumptech.glide:glide:$versions.glide"
-    glide.compiler = "com.github.bumptech.glide:compiler:$versions.glide"
-
-// Navigation libs
-def navigation = [:]
-    navigation.lib = "androidx.navigation:navigation-fragment-ktx:$versions.jetpack"
-    navigation.ui = "androidx.navigation:navigation-ui-ktx:$versions.jetpack"
-
-// Lifecycle libs
-def lifecycle = [:]
-    lifecycle.lib = "androidx.lifecycle:lifecycle-extensions:$versions.jetpack"
-    lifecycle.extensions = "androidx.lifecycle:lifecycle-extensions:$versions.jetpack"
-    lifecycle.compiler = "androidx.lifecycle:lifecycle-compiler:$versions.jetpack"
-
-// RxJava libs
-def rxjava = [:]
-    rxjava.lib = "io.reactivex.rxjava2:rxjava:$versions.rxjava"
-
-// Set all libs as extra property
-def deps = [:]
-    deps.gradle = gradle
-    deps.kotlin = kotlin
-    deps.support = support
-    deps.material = material
-    deps.architecture = architecture
-    deps.testing = testing
-    deps.dagger = dagger
-    deps.network = network
-    deps.coroutines = coroutines
-    deps.kotshi = kotshi
-    deps.glide = glide
-    deps.navigation = navigation
-    deps.lifecycle = lifecycle
-    deps.rxjava = rxjava
-ext.deps = deps
-
-// Set all build versions as extra property
-def buildInfo = [:]
-    buildInfo.minSdk = 21
-    buildInfo.targetSdk = 28
-    buildInfo.id = "com.dnylng.steadihand"
-    buildInfo.verCode = 1
-    buildInfo.verName = "1.0"
-ext.buildInfo = buildInfo
+    buildInfo = [
+            minSdk: 21,
+            targetSdk: 28,
+            id: "com.willowtree.steadihand",
+            verCode: 1,
+            verName: "1.0"
+    ]
+}

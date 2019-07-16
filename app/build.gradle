@@ -2,6 +2,7 @@ apply plugin: 'com.android.application'
 apply plugin: 'kotlin-android'
 apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-kapt'
+apply from: '../dependencies.gradle'
 
 android {
     compileSdkVersion buildInfo.targetSdk
@@ -36,56 +37,49 @@ android {
 }
 
 dependencies {
-    // Local libs
+    // Local
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 
-    // Project modules
-//    implementation project(path: ':api')
+    // Kotlin
+    implementation kotlin.lib
+    implementation kotlin.ktx
 
-    // Kotlin libs
-    implementation deps.kotlin.lib
-    implementation deps.kotlin.extensions
+    // Support
+    implementation support.appCompat
+    implementation support.constraintLayout
 
-    // Support libs
-    implementation deps.support.appCompat
-    implementation deps.support.constraintLayout
+    // Testing
+    testImplementation testing.junit
+    androidTestImplementation testing.testRunner
+    androidTestImplementation testing.espresso
+    testImplementation testing.coreTesting
 
-    // Material libs
-    implementation deps.material.lib
+    // Material
+    implementation material.lib
 
-    // Architecture component libs
-    implementation deps.architecture.extensions
-    implementation deps.architecture.common
-    kapt deps.architecture.compiler
-    testImplementation deps.architecture.coreTesting
+    // Jetpack
+    implementation jetpack.lifecycle
+    implementation jetpack.livedata
+    kapt jetpack.lifecycleCompiler
+    implementation jetpack.rxstreams
+    implementation jetpack.navigation
+    implementation jetpack.navigationUI
 
-    // Moshi
-    implementation deps.network.moshiConverter
+    // Koin
+    implementation koin.lib
+    implementation koin.viewModel
 
-    // Dagger libs
-    implementation deps.dagger.lib
-    kapt deps.dagger.compiler
+    // Networking
+    implementation network.moshiConverter
+    implementation network.okHttpLogging
 
-    // Coroutine libs
-    implementation deps.coroutines.core
-    implementation deps.coroutines.android
+    // Coroutines
+    implementation coroutines.core
+    implementation coroutines.android
 
-    // Glide libs
-    implementation deps.glide.lib
-    kapt deps.glide.compiler
+    // Logging
+    implementation logs.timber
 
-    // Jetpack libs
-    implementation deps.navigation.lib
-    implementation deps.navigation.ui
-    implementation deps.lifecycle.lib
-    implementation deps.lifecycle.extensions
-    kapt deps.lifecycle.compiler
-
-    // RxJava
-    implementation deps.rxjava.lib
-
-    // Testing libs
-    testImplementation deps.testing.junit
-    androidTestImplementation deps.testing.testRunner
-    androidTestImplementation deps.testing.espresso
+    // Rxjava
+    implementation rxjava.lib
 }

@@ -8,8 +8,9 @@ buildscript {
     }
 
     dependencies {
-        classpath deps.gradle.plugin
-        classpath deps.kotlin.plugin
+        classpath plugin.gradle
+        classpath plugin.kotlin
+        classpath plugin.gradleVersions
     }
 }
 
