@@ -39,7 +39,8 @@ class StabilizationService(
                             val pitch = orientationAngles[1]
                             val roll = orientationAngles[2]
 
-                            Timber.d("ROT -> x:$pitch, y: $roll, and z: $yaw")
+                            // TODO timber logs are lagging, replace with graph
+//                            Timber.d("ROT -> x:$pitch, y: $roll, and z: $yaw")
 
                             e.onNext(Pair(event.sensor.type, floatArrayOf(
                                 (referenceAngles[0] - yaw) * sensitivity,
@@ -65,8 +66,9 @@ class StabilizationService(
                                 position[index] += velocity[index] * 12500 * dt - sensitivity * position[index]
                             }
 
-                            Timber.d("VEL -> x:${velocity[0]}, and y: ${velocity[1]}")
-                            Timber.d("POS -> x:${position[0]}, and y: ${position[1]}")
+                            // TODO timber logs are lagging, replace with graph
+//                            Timber.d("VEL -> x:${velocity[0]}, and y: ${velocity[1]}")
+//                            Timber.d("POS -> x:${position[0]}, and y: ${position[1]}")
                         }
                         timestamp = event.timestamp
 
