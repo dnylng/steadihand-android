@@ -62,10 +62,10 @@ class PdfReaderFragment : Fragment() {
                 }
             }
             prevPdfBtn = findViewById<View>(com.dnylng.steadihand.R.id.prev_pdf_btn).also {
-                it.setOnClickListener { viewModel.pageIndex.value = viewModel.pageIndex.value?.minus(1) }
+                it.setOnClickListener { viewModel.updatePageIndex(-1) }
             }
             nextPdfBtn = findViewById<View>(com.dnylng.steadihand.R.id.next_pdf_btn).also {
-                it.setOnClickListener { viewModel.pageIndex.value = viewModel.pageIndex.value?.plus(1) }
+                it.setOnClickListener { viewModel.updatePageIndex(1) }
             }
         }
     }

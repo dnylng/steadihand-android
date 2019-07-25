@@ -29,12 +29,15 @@ class PdfReaderViewModel @Inject constructor(
     private lateinit var stabilizationDisposable: Disposable
     private val pdfReader = PdfReader(FILENAME)
     val errorMessage: LiveEvent<String> = LiveEvent()
-    val stabilizedRotation: MutableLiveData<FloatArray> = MutableLiveData()
-    val stabilizedPosition: MutableLiveData<FloatArray> = MutableLiveData()
-    var pageIndex: MutableLiveData<Int> = MutableLiveData()
+    private val stabilizedRotationData: MutableLiveData<FloatArray> = MutableLiveData()
+    val stabilizedRotation: LiveData<FloatArray> = stabilizedRotationData
+    private val stabilizedPositionData: MutableLiveData<FloatArray> = MutableLiveData()
+    val stabilizedPosition: LiveData<FloatArray> = stabilizedPositionData
+    private val pageIndexData: MutableLiveData<Int> = MutableLiveData()
+    val pageIndex: LiveData<Int> = pageIndexData
 
     init {
-        pageIndex.value = 0
+        pageIndexData.value = 0
     }
 
     override fun onCleared() {
@@ -83,8 +86,8 @@ class PdfReaderViewModel @Inject constructor(
             .subscribeOn(Schedulers.computation())
             .subscribe {
                 when (it.first) {
-                    Sensor.TYPE_GAME_ROTATION_VECTOR -> stabilizedRotation.postValue(it.second)
-                    Sensor.TYPE_LINEAR_ACCELERATION -> stabilizedPosition.postValue(it.second)
+                    Sensor.TYPE_GAME_ROTATION_VECTOR -> stabilizedRotationData.postValue(it.second)
+                    Sensor.TYPE_LINEAR_ACCELERATION -> stabilizedPositionData.postValue(it.second)
                 }
             }
     }
@@ -96,4 +99,8 @@ class PdfReaderViewModel @Inject constructor(
     fun getPageCount() = pdfReader.getPageCount()
 
     fun getBitmap(index: Int) = pdfReader.getBitmap(index)
+
+    fun updatePageIndex(value: Int) {
+        pageIndexData.value = pageIndexData.value?.plus(value)
+    }
 }
