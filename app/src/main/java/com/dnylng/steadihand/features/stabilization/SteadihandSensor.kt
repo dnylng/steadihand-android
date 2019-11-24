@@ -5,13 +5,12 @@ import android.content.Context
 import android.hardware.Sensor
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import javax.inject.Inject
 
-class SteadihandSensor @Inject constructor(
-    application: Application
+class SteadihandSensor constructor(
+    val app: Application
 ): StabilizationSensor {
 
-    private val sensorManager = application.applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
+    private val sensorManager = app.applicationContext.getSystemService(Context.SENSOR_SERVICE) as SensorManager
 
     override fun registerListener(listener: SensorEventListener, sensor: Sensor?, sampling: Int) {
         sensorManager.registerListener(listener, sensor, sampling)

@@ -1,22 +1,22 @@
 package com.dnylng.steadihand
 
 import android.app.Application
-import com.dnylng.steadihand.di.AppModule
-import com.dnylng.steadihand.di.DaggerSteadihandComponent
-import com.dnylng.steadihand.di.SteadihandComponent
+import com.dnylng.steadihand.di.appModule
+import org.koin.android.ext.koin.androidContext
+import org.koin.android.ext.koin.androidLogger
+import org.koin.core.context.startKoin
 
 class SteadihandApplication: Application() {
-
-    companion object {
-        lateinit var component: SteadihandComponent
-    }
 
     override fun onCreate() {
         super.onCreate()
 
-        component = DaggerSteadihandComponent
-            .builder()
-            .appModule(AppModule(this))
-            .build()
+        startKoin {
+            androidLogger()
+            androidContext(this@SteadihandApplication)
+            modules(listOf(
+                appModule
+            ))
+        }
     }
 }

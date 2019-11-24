@@ -4,18 +4,14 @@ import android.hardware.Sensor
 import android.hardware.SensorEvent
 import android.hardware.SensorEventListener
 import android.hardware.SensorManager
-import android.util.Log
 import com.dnylng.steadihand.util.Utils
 import io.reactivex.Observable
+import timber.log.Timber
 
 
 class StabilizationService(
     private val stabilizationSensor: StabilizationSensor
 ) {
-
-    companion object {
-        private val TAG = StabilizationService::class.java.simpleName
-    }
 
     private var rotationSensor: Sensor? = null
     private var accelerometer: Sensor? = null
@@ -43,7 +39,8 @@ class StabilizationService(
                             val pitch = orientationAngles[1]
                             val roll = orientationAngles[2]
 
-                            Log.d(TAG, "ROT -> x:$pitch, y: $roll, and z: $yaw")
+                            // TODO timber logs are lagging, replace with graph
+//                            Timber.d("ROT -> x:$pitch, y: $roll, and z: $yaw")
 
                             e.onNext(Pair(event.sensor.type, floatArrayOf(
                                 (referenceAngles[0] - yaw) * sensitivity,
@@ -69,8 +66,9 @@ class StabilizationService(
                                 position[index] += velocity[index] * 12500 * dt - sensitivity * position[index]
                             }
 
-                            Log.d(TAG, "VEL -> x:${velocity[0]}, and y: ${velocity[1]}")
-                            Log.d(TAG, "POS -> x:${position[0]}, and y: ${position[1]}")
+                            // TODO timber logs are lagging, replace with graph
+//                            Timber.d("VEL -> x:${velocity[0]}, and y: ${velocity[1]}")
+//                            Timber.d("POS -> x:${position[0]}, and y: ${position[1]}")
                         }
                         timestamp = event.timestamp
 

@@ -7,48 +7,22 @@ import android.view.ViewGroup
 import android.widget.ImageView
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProviders
-import com.dnylng.steadihand.SteadihandApplication
-import com.dnylng.steadihand.di.viewmodel.ViewModelFactory
 import com.dnylng.steadihand.util.snack
-import javax.inject.Inject
+import org.koin.androidx.viewmodel.ext.android.viewModel
 
 
 class PdfReaderFragment : Fragment() {
 
-    companion object {
-        private val TAG = PdfReaderFragment::class.java.simpleName
-
-        fun newInstance(): Fragment {
-            return PdfReaderFragment()
-        }
-    }
-
-    /**
-     * Vars for the views
-     */
     private lateinit var pdf: ImageView
     private lateinit var prevPdfBtn: View
     private lateinit var nextPdfBtn: View
-
-    /**
-     * Vars for the view model
-     */
-    @Inject
-    lateinit var factory: ViewModelFactory
-    private lateinit var viewModel: PdfReaderViewModel
+    private val viewModel: PdfReaderViewModel by viewModel()
 
     /**
      * Life Cycle methods
      */
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        SteadihandApplication.component.inject(this)
-    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
-        viewModel = ViewModelProviders.of(this, factory).get(PdfReaderViewModel::class.java)
-
         observePageIndex()
         observeError()
         observeRotation()
@@ -57,7 +31,7 @@ class PdfReaderFragment : Fragment() {
         return inflater.inflate(com.dnylng.steadihand.R.layout.fragment_pdfreader, container, false).apply {
             pdf = findViewById<ImageView>(com.dnylng.steadihand.R.id.pdf).also {
                 setOnLongClickListener {
-                    viewModel.stabilizationService.reset()
+                    viewModel.resetStabilization()
                     true
                 }
             }
@@ -134,7 +108,7 @@ class PdfReaderFragment : Fragment() {
 
     private fun updateUi() {
         val index = viewModel.pageIndex.value ?: return
-        val pageCount = viewModel.getPageCount()
+        val pageCount = viewModel.getPageCount() ?: return
         prevPdfBtn.isEnabled = 0 != index
         nextPdfBtn.isEnabled = index + 1 < pageCount
     }
