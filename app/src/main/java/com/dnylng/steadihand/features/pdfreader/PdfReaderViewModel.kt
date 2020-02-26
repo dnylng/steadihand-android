@@ -3,6 +3,7 @@ package com.dnylng.steadihand.features.pdfreader
 import android.app.Application
 import android.hardware.Sensor
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import com.dnylng.steadihand.features.stabilization.StabilizationService
 import com.dnylng.steadihand.util.LiveEvent
